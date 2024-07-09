@@ -8,7 +8,7 @@ class BackgroundMethods(Enum):
     MEAN = "Mean"
     MEDIAN = "Median"
 
-def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
+def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=6, outSkyR=12):
     """
     Checks:
         Enforce targetX and targetY to integers
