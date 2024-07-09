@@ -47,7 +47,7 @@ def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
     # circular aperture
     for i in range(len(aperture)):
         for j in range(len(aperture[0])):
-            distance = getDistance(i, j, len(aperture)/2.0, len(aperture[0])/2.0)
+            distance = getDistance(i, j, len(aperture)/2.0-0.7, len(aperture[0])/2.0-1)
             if distance > r:
                 aperture[i, j] = 0
     # print(targetX, r, targetX - r, targetX + r + 1) # debug
@@ -76,6 +76,8 @@ def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
     ySigma = getStDev(YSumArr, yCoordsArr, ycm, apSum)
     #end
     # plt.show()
+    print(aperture)
+    print(xCoordsArr)
     return ycm, xcm, xSigma, ySigma
 
 def getStDev(valueArr, coordsArr, center, sum):
@@ -88,7 +90,7 @@ plt.gray()
 
 #REMEMBER TO SUSBTRACT 1,1 FROM DS9 COORDS
 centroid_x, centroid_y, uncert_x, uncert_y = findCentroid(
-    "centroid_sample.fits", BackgroundMethods.MEAN, 351, 154, r=3, inSkyR=5, outSkyR=9)
+    "centroid_sample.fits", BackgroundMethods.MEAN, 351, 154, r=3, inSkyR=12, outSkyR=20)
 
 # centroid_x, centroid_y, uncert_x, uncert_y = findCentroid("sampleimage.fits", 459, 397, 2)
 
