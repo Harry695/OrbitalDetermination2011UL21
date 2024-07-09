@@ -9,10 +9,23 @@ class BackgroundMethods(Enum):
     MEDIAN = "Median"
 
 def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
+    """
+    Checks:
+        Enforce targetX and targetY to integers
+        Constrain background method to valid options
+        Ensure valid radii
+    """
+    # prevent floats
+    targetX = int(targetX)
+    targetY = int(targetY)
+    # make sure background methods is what is designated
     if bkgdMethod not in BackgroundMethods:
         raise ValueError(f"The value {bkgdMethod} is not in {[e.value for e in BackgroundMethods]}")
+    # make sure radii are valid
+    if inSkyR < r or r < 0 or inSkyR < 0 or inSkyR < 0:
+        raise ValueError("The radii are not valid!!!!")
 
-    #testing
+    #flip x and y to correct for swapping of x and y to rows and cols
     temp = targetX
     targetX = targetY
     targetY = temp
@@ -96,6 +109,8 @@ plt.gray()
 #REMEMBER TO SUSBTRACT 1,1 FROM DS9 COORDS
 centroid_x, centroid_y, uncert_x, uncert_y = findCentroid(
     "centroid_sample.fits", BackgroundMethods.MEDIAN, 351, 154, r=3, inSkyR=6, outSkyR=12)
+print("Sigma X", uncert_x)
+print("Sigma Y", uncert_y)
 
 # centroid_x, centroid_y, uncert_x, uncert_y = findCentroid("sampleimage.fits", 459, 397, 2)
 
