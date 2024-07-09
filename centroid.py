@@ -14,6 +14,10 @@ def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
     if bkgdMethod not in BackgroundMethods:
         raise ValueError(f"The value {bkgdMethod} is not in {[e.value for e in BackgroundMethods]}")
 
+    #testing
+    targetX += 0
+    targetY += 0
+
     # open file
     data = fits.getdata(file)
     # debug
@@ -24,7 +28,7 @@ def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
     bkgdCounter = 0
     for row in range(len(data)):
         for col in range(len(data[0])):
-            distance = getDistance(row, col, 0, 0)
+            distance = getDistance(row, col, targetX, targetY)
             if (distance > inSkyR and distance < outSkyR):
                 bkgdCounter += 1
                 bkgdSum += data[row, col]
@@ -35,11 +39,18 @@ def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
 
     # define aperture
     aperture = data[targetX - r : targetX + r + 1, targetY - r : targetY + r + 1]
-    # print(targetX, r, targetX - r, targetX + r + 1) # debug
-    # print(targetY, r, targetY - r, targetY + r + 1)
     # substract bkgd
     np.subtract(aperture, bkgdAvg)
+    # circular aperture
+    for i in range(len(aperture)):
+        for j in range(len(aperture[0])):
+            distance = getDistance(i, j, len(aperture)/2.0-0.85, len(aperture[0])/2.0-0.8)
+            if distance > r:
+                aperture[i, j] = 0
+    # print(targetX, r, targetX - r, targetX + r + 1) # debug
+    # print(targetY, r, targetY - r, targetY + r + 1)
     # print(np.shape(aperture)) #debug
+    print(aperture)
     # calculate sum of aperture
     apSum = np.sum(aperture)
 
@@ -73,12 +84,12 @@ plt.gray()
 
 #REMEMBER TO SUSBTRACT 1,1 FROM DS9 COORDS
 centroid_x, centroid_y, uncert_x, uncert_y = findCentroid(
-    "centroid_sample.fits", BackgroundMethods.MEAN, 351, 154, r=4, inSkyR=7, outSkyR=12)
+    "centroid_sample.fits", BackgroundMethods.MEAN, 351, 154, r=3, inSkyR=5, outSkyR=9)
 
 # centroid_x, centroid_y, uncert_x, uncert_y = findCentroid("sampleimage.fits", 459, 397, 2)
 
 if abs(centroid_x - 350.7806) < 0.1 and abs(centroid_y - 153.5709) < 0.1:
-    print("centroid calculation CORRECT")
+    print(f"centroid calculation CORRECT: {centroid_x}, {centroid_y}")
 else:
     print(
         "centroid calculation INCORRECT, expected (350.7806, 153.5709), got ({}, {})".format(
