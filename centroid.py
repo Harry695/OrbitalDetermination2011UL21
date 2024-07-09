@@ -15,8 +15,9 @@ def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
         raise ValueError(f"The value {bkgdMethod} is not in {[e.value for e in BackgroundMethods]}")
 
     #testing
-    targetX += 0
-    targetY += 0
+    temp = targetX
+    targetX = targetY
+    targetY = temp
 
     # open file
     data = fits.getdata(file)
@@ -34,23 +35,26 @@ def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
                 bkgdSum += data[row, col]
     
     # average all pixel in background
-    bkgdAvg = bkgdSum / bkgdCounter
+    bkgdAvg = int(bkgdSum / bkgdCounter)
     print("Background average", bkgdAvg)
 
     # define aperture
     aperture = data[targetX - r : targetX + r + 1, targetY - r : targetY + r + 1]
     # substract bkgd
-    np.subtract(aperture, bkgdAvg)
+    aperture = np.clip(aperture, bkgdAvg, 65535)
+    print(aperture)
+    aperture = np.subtract(aperture, bkgdAvg)
     # circular aperture
     for i in range(len(aperture)):
         for j in range(len(aperture[0])):
-            distance = getDistance(i, j, len(aperture)/2.0-0.85, len(aperture[0])/2.0-0.8)
+            distance = getDistance(i, j, len(aperture)/2.0, len(aperture[0])/2.0)
             if distance > r:
                 aperture[i, j] = 0
     # print(targetX, r, targetX - r, targetX + r + 1) # debug
     # print(targetY, r, targetY - r, targetY + r + 1)
     # print(np.shape(aperture)) #debug
     print(aperture)
+    # aperture[aperture < 0] = 0  
     # calculate sum of aperture
     apSum = np.sum(aperture)
 
@@ -72,7 +76,7 @@ def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
     ySigma = getStDev(YSumArr, yCoordsArr, ycm, apSum)
     #end
     # plt.show()
-    return xcm, ycm, xSigma, ySigma
+    return ycm, xcm, xSigma, ySigma
 
 def getStDev(valueArr, coordsArr, center, sum):
     return sqrt(np.sum(valueArr * (coordsArr - center)**2) / (sum**2 - sum))
