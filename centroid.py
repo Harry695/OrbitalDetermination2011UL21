@@ -7,8 +7,6 @@ from math import sqrt
 class BackgroundMethods(Enum):
     MEAN = "Mean"
     MEDIAN = "Median"
-    FIRST_TO_THIRD_QUARTILE_MEAN = "First to third quartile mean"
-    MODE = "Mode"
 
 def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
     if bkgdMethod not in BackgroundMethods:
@@ -25,17 +23,24 @@ def findCentroid(file, bkgdMethod, targetX, targetY, r=3, inSkyR=5, outSkyR=9):
     # plt.imshow(data, origin="lower", vmin=2.0e3, vmax=2.8e3)
 
     # sum up background
-    bkgdSum = 0
+    data2 = data.copy()
     bkgdCounter = 0
-    for row in range(len(data)):
-        for col in range(len(data[0])):
+    for row in range(targetX - outSkyR, targetX + outSkyR + 1):
+        for col in range(targetY - outSkyR, targetY + outSkyR + 1):
             distance = getDistance(row, col, targetX, targetY)
-            if (distance > inSkyR and distance < outSkyR):
+            if (distance < inSkyR or distance > outSkyR):
+                data2[row, col] = 0
+            else: 
                 bkgdCounter += 1
-                bkgdSum += data[row, col]
-    
+    bkgd = data2[targetX - outSkyR : targetX + outSkyR + 1, targetY - outSkyR : targetY + outSkyR + 1]
     # average all pixel in background
-    bkgdAvg = int(bkgdSum / bkgdCounter)
+    bkgdAvg = 0
+    if bkgdMethod == BackgroundMethods.MEAN:
+        bkgdAvg = int(np.sum(bkgd) / bkgdCounter)
+    elif bkgdMethod == BackgroundMethods.MEDIAN:
+        bkgdAvg = np.median(bkgd)
+        print(np.median(bkgd))
+
     print("Background average", bkgdAvg)
 
     # define aperture
@@ -90,7 +95,7 @@ plt.gray()
 
 #REMEMBER TO SUSBTRACT 1,1 FROM DS9 COORDS
 centroid_x, centroid_y, uncert_x, uncert_y = findCentroid(
-    "centroid_sample.fits", BackgroundMethods.MEAN, 351, 154, r=3, inSkyR=12, outSkyR=20)
+    "centroid_sample.fits", BackgroundMethods.MEDIAN, 351, 154, r=3, inSkyR=6, outSkyR=12)
 
 # centroid_x, centroid_y, uncert_x, uncert_y = findCentroid("sampleimage.fits", 459, 397, 2)
 
