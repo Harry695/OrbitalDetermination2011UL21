@@ -7,6 +7,11 @@ class Axis(Enum):
     Y = "Y"
     Z = "Z"
 
+def magnitude(vec): # TODO: ACTUALLY TEST  
+    vec = np.array(vec)
+    vecSq = vec * vec
+    return sqrt(np.sum(vecSq))
+
 def quadrantCorrection(sin, cos): #TODO: test edge cases more
     thetaS = degrees(asin(sin))
     thetaC = degrees(acos(cos))
