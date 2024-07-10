@@ -17,7 +17,7 @@ velVec = np.array([qf15[3], qf15[4], qf15[5]]) * Constants.DAY_IN_GAUSSIAN_DAY
 print("Specific Angular momentum:", getAngularMomentum(posVec, velVec))
 print("Semimajor Axis:", getSemimajorAxis(posVec, velVec))
 print("Eccentricity:", getEccentricity(posVec, velVec))
-print("Inclination:", getInclination(posVec, velVec))
+print("Inclination:", degrees(getInclination(posVec, velVec)))
 print("Longitude of ascending node:", getLongitudeOfAscendingNode(posVec, velVec))
 print("Argument of perihelion:", getArgumentOfPerihelion(posVec, velVec))
 
