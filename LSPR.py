@@ -1,18 +1,17 @@
 import numpy as np
+from math import sqrt
 from odlib.conversions import *
 
-# parse data
 file = "LSPRtestinput1.txt"
-data = [e.strip() for e in open(file).readlines()]
-dataMat = []
-for obj in data:
-    dataMat.append(obj.split())
 
 
-def findPlateConstants(dataMat):
+def parseData(file):
+    # load data
+    data = [e.strip() for e in open(file).readlines()]
+    dataMat = []
+    for obj in data:
+        dataMat.append(obj.split())
     dataMat = np.array(dataMat).transpose()  # easier to do stuff to rows to column
-    # print(data) # debug
-    # print(dataMat) # debug
 
     # numberify all values
     for i in range(len(dataMat[2])):  # ra
@@ -21,8 +20,13 @@ def findPlateConstants(dataMat):
     for i in range(len(dataMat[3])):  # dec
         dec = [float(e) for e in dataMat[3, i].split(":")]
         dataMat[3, i] = DMStoDeg(dec[0], dec[1], dec[2])  # convert to decimal deg
-    dataMat = dataMat.astype(float)  # make whole array floats
-    # print(dataMat)  # debug
+    dataMat = dataMat.astype(float)  # make the whole array floats
+
+    return dataMat
+
+
+def findPlateConstants(dataMat):
+    # print(dataMat) # debug
 
     # form matrix variables
     n = len(dataMat[0])
@@ -79,4 +83,28 @@ def findPlateConstants(dataMat):
     return b1, b2, a11, a12, a21, a22
 
 
+def findUncert(dataMat, b1, b2, a11, a12, a21, a22):
+    dataMat = dataMat.astype(float) #security check
+    
+    # print(dataMat)
+    n = len(dataMat[0])
+
+    # RA
+    raSum = 0
+    for i in range(len(dataMat[0])):
+        raSum += (dataMat[2][i] - b1 - a11 * dataMat[0][i] - a12 * dataMat[1][i]) ** 2
+    sigmaRA = sqrt(raSum / (n - 3)) * 3600
+
+    # dec
+    decSum = 0
+    for i in range(len(dataMat[0])):
+        decSum += (dataMat[3][i] - b2 - a21 * dataMat[0][i] - a22 * dataMat[1][i]) ** 2
+    sigmaDEC = sqrt(decSum / (n - 3)) * 3600
+
+    return sigmaRA, sigmaDEC
+
+
+dataMat = parseData(file)
 b1, b2, a11, a12, a21, a22 = findPlateConstants(dataMat)
+print("Plate constants are", b1, b2, a11, a12, a21, a22, sep="\n")
+print("Uncertainties are", findUncert(dataMat, b1, b2, a11, a12, a21, a22))
