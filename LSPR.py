@@ -1,15 +1,15 @@
 import numpy as np
 from odlib.conversions import *
 
+# parse data
 file = "LSPRtestinput1.txt"
+data = [e.strip() for e in open(file).readlines()]
+dataMat = []
+for obj in data:
+    dataMat.append(obj.split())
 
 
-def findPlateConstants(file):
-    # parse data
-    data = [e.strip() for e in open(file).readlines()]
-    dataMat = []
-    for obj in data:
-        dataMat.append(obj.split())
+def findPlateConstants(dataMat):
     dataMat = np.array(dataMat).transpose()  # easier to do stuff to rows to column
     # print(data) # debug
     # print(dataMat) # debug
@@ -22,7 +22,7 @@ def findPlateConstants(file):
         dec = [float(e) for e in dataMat[3, i].split(":")]
         dataMat[3, i] = DMStoDeg(dec[0], dec[1], dec[2])  # convert to decimal deg
     dataMat = dataMat.astype(float)  # make whole array floats
-    print(dataMat)  # debug
+    # print(dataMat)  # debug
 
     # form matrix variables
     n = len(dataMat[0])
@@ -66,10 +66,17 @@ def findPlateConstants(file):
     # for e in mat2:
     # print(e)
 
-    # assigning variables
+    # assigning variables TODO: make less horrible
     b1, a11, a12 = np.array(mat1)
     b2, a21, a22 = np.array(mat2)
-    return b1[0], b2[0], a11[0], a12[0], a21[0], a22[0]
+    b1 = b1[0]
+    b2 = b2[0]
+    a11 = a11[0]
+    a12 = a12[0]
+    a21 = a21[0]
+    a22 = a22[0]
+
+    return b1, b2, a11, a12, a21, a22
 
 
-print(findPlateConstants(file))
+b1, b2, a11, a12, a21, a22 = findPlateConstants(dataMat)
