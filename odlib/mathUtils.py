@@ -25,7 +25,7 @@ def quadrantCorrection(sin, cos): #TODO: test edge cases more
         return thetaS + 360
     else:
         return 0
-    
+
 def vectorRotation(vec, axis, angle): # active rotation
     vec = np.matrix([[vec[0]], [vec[1]], [vec[2]]]) #convert 1x3 to 3x1 for matrix multiplication
     angle = radians(angle)
@@ -45,4 +45,13 @@ def vectorRotation(vec, axis, angle): # active rotation
     res = rotMatrix @ vec
     return np.array([res[0, 0], res[1, 0], res[2, 0]])
 
- 
+def solveUsingNewtonsMethod(xGuess, f, fPrime):
+    # catch f'(xGuess) = 0
+    if fPrime(xGuess) == 0:
+        xGuess += 0.1
+    # update xGuess
+    xNew = xGuess - f(xGuess) / fPrime(xGuess)
+    print(xNew) # debug
+    if abs(xNew - xGuess) > 1.0e-18:
+        xNew = solveUsingNewtonsMethod(xNew, f, fPrime) # try again if not within bound yet
+    return xNew
