@@ -106,19 +106,19 @@ def getStDev(valueArr, coordsArr, center, sum):
 
 
 # REMEMBER TO SUSBTRACT 1,1 FROM DS9 COORDS
-centroid_x, centroid_y, uncert_x, uncert_y = findCentroid(
-    "centroid_sample.fits", BackgroundMethods.MEAN, 351, 154, r=3, inSkyR=5, outSkyR=9
-)
-print("Sigma X", uncert_x)
-print("Sigma Y", uncert_y)
-if abs(centroid_x - 350.7806) < 0.1 and abs(centroid_y - 153.5709) < 0.1:
-    print(f"centroid calculation CORRECT: {centroid_x}, {centroid_y}")
-else:
-    print(
-        "centroid calculation INCORRECT, expected (350.7806, 153.5709), got ({}, {})".format(
-            centroid_x, centroid_y
-        )
-    )
+# centroid_x, centroid_y, uncert_x, uncert_y = findCentroid(
+#     "centroid_sample.fits", BackgroundMethods.MEAN, 351, 154, r=3, inSkyR=5, outSkyR=9
+# )
+# print("Sigma X", uncert_x)
+# print("Sigma Y", uncert_y)
+# if abs(centroid_x - 350.7806) < 0.1 and abs(centroid_y - 153.5709) < 0.1:
+#     print(f"centroid calculation CORRECT: {centroid_x}, {centroid_y}")
+# else:
+#     print(
+#         "centroid calculation INCORRECT, expected (350.7806, 153.5709), got ({}, {})".format(
+#             centroid_x, centroid_y
+#         )
+#     )
 
-plt.gray()
-plt.show()
+# plt.gray()
+# plt.show()
