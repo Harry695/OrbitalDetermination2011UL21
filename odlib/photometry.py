@@ -39,8 +39,6 @@ def aperturePhotometry(file, bkgdMethod, targetX, targetY, r=3, inSkyR=6, outSky
     # apply mask
     bkgd[~bkgdMask1] = 0
     bkgd[~bkgdMask2] = 0
-    # bkgd[bkgd == 0] = np.NaN
-    # plt.imshow(bkgd)
     
     # average all pixel in background
     bkgdAvg = 0
@@ -50,9 +48,7 @@ def aperturePhotometry(file, bkgdMethod, targetX, targetY, r=3, inSkyR=6, outSky
         bkgdAvg = np.nanmedian(bkgd[bkgd!=0])
     # plt.imshow(bkgd)
 
-    print("Background average", bkgdAvg)
-    # testing
-    # bkgdAvg = 1243
+    # print("Background average", bkgdAvg)
 
     # define aperture
     aperture = data.copy()[targetY - r : targetY + r + 1, targetX - r : targetX + r + 1]
@@ -82,7 +78,8 @@ def aperturePhotometry(file, bkgdMethod, targetX, targetY, r=3, inSkyR=6, outSky
     sumY = yCoordsArr * YSumArr
     ycm = sumY.sum() / signal
 
-    print(xcm, ycm)
+    # print(f"Centroid at {xcm :2f}, {ycm: 2f}")
+
     # recenter aperture
     xcm = int(xcm)
     ycm = int(ycm)
@@ -100,8 +97,8 @@ def aperturePhotometry(file, bkgdMethod, targetX, targetY, r=3, inSkyR=6, outSky
     nPix = np.count_nonzero(newAperture)
     # nPix = 77
     signal = gain * np.sum(newAperture) - bkgdAvg * nPix
-    print("signal", signal)
-    print("nPix", nPix)
+    # print("signal", signal)
+    # print("nPix", nPix)
     nBkgd = np.count_nonzero(bkgd)
     # print("nBkgd", nBkgd)
     # bkgd = np.clip(bkgd, bkgdAvg, 65535)
@@ -111,17 +108,63 @@ def aperturePhotometry(file, bkgdMethod, targetX, targetY, r=3, inSkyR=6, outSky
     rho2 = readNoise ** 2 + gain ** 2 / 12
     # print(rho2)
     ab = 1 + nPix / nBkgd
-    print("ab", ab)
+    # print("ab", ab)
     # print(nPix * ab * (bkgdAvg + darkCurrent))
     snr = signal / sqrt(signal + nPix * ab * (bkgdAvg + darkCurrent) + nPix * ab * rho2)
-    # snr = 45.3
-    # snr = sqrt(signal) / sqrt(1 + nPix * ab * ((bkgdAvg + darkCurrent + rho2) / signal))
-    print("SNR", snr)
+    # print("SNR", snr)
+    # print("Signal uncertainty", signal / snr)
     mInst = -2.5 * log10(signal)
-    print("mInst", mInst)
+    # print("mInst", mInst)
     uncertInst = 1.0875 / snr
-    print("uncertInst", uncertInst)
+    # print("uncertInst", uncertInst)
 
-aperturePhotometry("aptest.fit", BackgroundMethods.MEDIAN, 490, 293, r=5, inSkyR=8, outSkyR=13)
+    return mInst, uncertInst
+
+def differentialPhotometry(starFile, image, targetX, targetY):
+    # parse data
+    data = [e.strip() for e in open(starFile).readlines()]
+    dataMat = []
+    for obj in data:
+        dataMat.append(obj.split())
+    dataMat = np.array(dataMat)
+    dataMat = dataMat.astype(float)
+    # print(dataMat) # debug
+
+    # calculate mInst
+    mInstArr = []
+    for star in dataMat:
+        mInst = aperturePhotometry(image, BackgroundMethods.MEDIAN, star[0], star[1], 5, 8, 13)[0]
+        mInstArr.append(mInst)
+    # print(mInstArr) # debug
+
+    # calculate c
+    transposedMat = np.transpose(dataMat)
+    print(transposedMat[2])
+    cList = np.subtract(transposedMat[2], np.array(mInstArr))
+    # print(cList) # debug
+    cSum = np.sum(cList)
+    # print(cSum) # debug
+    c = cSum / len(dataMat)
+    print("C value:", c) # debug
+
+    # calculate dm
+    dm = np.std(cList)
+    print("dm value:", dm) # debug
+
+    # calculate catalog magnitude of target star
+    output = aperturePhotometry(image, BackgroundMethods.MEDIAN, targetX, targetY, 5, 8, 13)
+    mCat = output[0] + c
+    print("Catalogue magnitude of requested star:", mCat) # debug
+    uncert = output[1]
+    # print("uncert", uncert) # debug
+
+    # error calculation
+    error = sqrt(dm ** 2 + uncert ** 2)
+    print("Catalogue magnitude error: ", error)
+
+    return mCat, error
+
+# aperturePhotometry("aptest.fit", BackgroundMethods.MEDIAN, 490, 293, r=5, inSkyR=8, outSkyR=13)
+differentialPhotometry("stars_test.txt", "diff_phot.fit", 546, 327)
 plt.gray()
-plt.show()
+# plt.show()
