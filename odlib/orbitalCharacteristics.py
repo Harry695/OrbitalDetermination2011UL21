@@ -54,3 +54,6 @@ def getArgumentOfPerihelion(posVec, velVec):  # works
     if w < 0:
         w += 360
     return w
+
+def getEccentricAnomaly(m, ecc):
+    return solveUsingNewtonsMethod(m, lambda e: e - ecc * sin(e) - m, lambda e: 1 - ecc * cos(e))
