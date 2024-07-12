@@ -39,18 +39,20 @@ def aperturePhotometry(file, bkgdMethod, targetX, targetY, r=3, inSkyR=6, outSky
     # apply mask
     bkgd[~bkgdMask1] = 0
     bkgd[~bkgdMask2] = 0
+    # bkgd[bkgd == 0] = np.NaN
     # plt.imshow(bkgd)
     
     # average all pixel in background
     bkgdAvg = 0
     if bkgdMethod == BackgroundMethods.MEAN:
-        bkgdAvg = int(np.sum(bkgd) / np.count_nonzero(bkgd))
+        bkgdAvg = np.nanmean(bkgd[bkgd!=0])
     elif bkgdMethod == BackgroundMethods.MEDIAN:
-        bkgdAvg = np.median(bkgd)
+        bkgdAvg = np.nanmedian(bkgd[bkgd!=0])
+    # plt.imshow(bkgd)
 
     print("Background average", bkgdAvg)
     # testing
-    bkgdAvg = 1243
+    # bkgdAvg = 1243
 
     # define aperture
     aperture = data.copy()[targetY - r : targetY + r + 1, targetX - r : targetX + r + 1]
@@ -88,7 +90,7 @@ def aperturePhotometry(file, bkgdMethod, targetX, targetY, r=3, inSkyR=6, outSky
     apertureMask = x**2 + y**2 <= r**2
     newAperture = data[ycm - r : ycm + r + 1, xcm - r : xcm + r + 1]
     newAperture[~apertureMask] = 0
-    plt.imshow(newAperture)
+    # plt.imshow(newAperture)
     # newAperture = np.subtract(np.clip(newAperture, bkgdAvg, None), bkgdAvg)
 
     # photometry variables
@@ -101,8 +103,8 @@ def aperturePhotometry(file, bkgdMethod, targetX, targetY, r=3, inSkyR=6, outSky
     print("signal", signal)
     print("nPix", nPix)
     nBkgd = np.count_nonzero(bkgd)
-    print("nBkgd", nBkgd)
-    bkgd = np.clip(bkgd, bkgdAvg, 65535)
+    # print("nBkgd", nBkgd)
+    # bkgd = np.clip(bkgd, bkgdAvg, 65535)
     # background = gain * np.sum(np.subtract(bkgd, bkgdAvg))
     # print(np.subtract(bkgd, bkgdAvg))
     # print("background", background)
@@ -112,6 +114,7 @@ def aperturePhotometry(file, bkgdMethod, targetX, targetY, r=3, inSkyR=6, outSky
     print("ab", ab)
     # print(nPix * ab * (bkgdAvg + darkCurrent))
     snr = signal / sqrt(signal + nPix * ab * (bkgdAvg + darkCurrent) + nPix * ab * rho2)
+    # snr = 45.3
     # snr = sqrt(signal) / sqrt(1 + nPix * ab * ((bkgdAvg + darkCurrent + rho2) / signal))
     print("SNR", snr)
     mInst = -2.5 * log10(signal)
@@ -119,6 +122,6 @@ def aperturePhotometry(file, bkgdMethod, targetX, targetY, r=3, inSkyR=6, outSky
     uncertInst = 1.0875 / snr
     print("uncertInst", uncertInst)
 
-aperturePhotometry("aptest.fit", BackgroundMethods.MEAN, 490, 293, r=5, inSkyR=8, outSkyR=13)
+aperturePhotometry("aptest.fit", BackgroundMethods.MEDIAN, 490, 293, r=5, inSkyR=8, outSkyR=13)
 plt.gray()
 plt.show()
