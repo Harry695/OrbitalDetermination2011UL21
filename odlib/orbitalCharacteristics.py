@@ -47,13 +47,29 @@ def getArgumentOfPerihelion(posVec, velVec):  # works
     # print(sinMu)
     cosMu = (a * (1 - e**2) / posMag - 1) / e
     # print(cosMu)
-    mu = quadrantCorrection(sinMu, cosMu)
+    # mu = quadrantCorrection(sinMu, cosMu)
+    mu = getTrueAnomaly(posVec, velVec)
     # print("U", u)
     # print("Mu", mu)
     w = u - mu
     if w < 0:
         w += 360
     return w
+
+def getTrueAnomaly(posVec, velVec):
+    posMag = magnitude(posVec)
+    h = getAngularMomentum(posVec, velVec)
+    hMag = magnitude(h)
+    a = getSemimajorAxis(posVec, velVec)
+    e = getEccentricity(posVec, velVec)
+    sinMu = a * (1 - e**2) * np.dot(posVec, velVec) / (e * hMag * posMag)
+    # print(sinMu)
+    cosMu = (a * (1 - e**2) / posMag - 1) / e
+    # print(cosMu)
+    return quadrantCorrection(sinMu, cosMu)
+
+def getMeanAnomaly(posVec, velVec, time):
+    pass
 
 def getEccentricAnomaly(m, ecc):
     return solveUsingNewtonsMethod(m, lambda e: e - ecc * sin(e) - m, lambda e: 1 - ecc * cos(e))
