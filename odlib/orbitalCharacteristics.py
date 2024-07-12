@@ -68,8 +68,12 @@ def getTrueAnomaly(posVec, velVec):
     # print(cosMu)
     return quadrantCorrection(sinMu, cosMu)
 
-def getMeanAnomaly(posVec, velVec, time):
-    pass
+def getMeanAnomaly(posVec, velVec):
+    posMag = magnitude(posVec)
+    a = getSemimajorAxis(posVec, velVec)
+    e = getEccentricity(posVec, velVec)
+    E = acos((1 - posMag / a) / e)
+    return degrees(E - e * sin(E))
 
 def getEccentricAnomaly(m, ecc):
     return solveUsingNewtonsMethod(m, lambda e: e - ecc * sin(e) - m, lambda e: 1 - ecc * cos(e))
