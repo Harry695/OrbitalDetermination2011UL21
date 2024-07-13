@@ -29,3 +29,10 @@ def printDMS(dec):
     dec -= m/60
     s = round(dec * 3600, 2)
     print(f'''DEC: {d}deg {m}' {s}"''')
+
+def gregorianToJulianDay(year, month, day, hour, minute, second):
+    """
+    Time is in UT!
+    """
+    jDay = 367 * year - (7 * (year + (month + 9) // 12)) // 4 + (275 * month) // 9 + day + 1721013.5 + (hour + minute / 60 + second / 3600) / 24 
+    return jDay
