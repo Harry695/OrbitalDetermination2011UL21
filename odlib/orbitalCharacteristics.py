@@ -56,6 +56,7 @@ def getArgumentOfPerihelion(posVec, velVec):  # works
         w += 360
     return w
 
+
 def getTrueAnomaly(posVec, velVec):
     posMag = magnitude(posVec)
     h = getAngularMomentum(posVec, velVec)
@@ -68,6 +69,7 @@ def getTrueAnomaly(posVec, velVec):
     # print(cosMu)
     return quadrantCorrection(sinMu, cosMu)
 
+
 def getMeanAnomaly(posVec, velVec):
     posMag = magnitude(posVec)
     a = getSemimajorAxis(posVec, velVec)
@@ -75,5 +77,12 @@ def getMeanAnomaly(posVec, velVec):
     E = acos((1 - posMag / a) / e)
     return degrees(E - e * sin(E))
 
-def getEccentricAnomaly(m, ecc):
-    return solveUsingNewtonsMethod(m, lambda e: e - ecc * sin(e) - m, lambda e: 1 - ecc * cos(e))
+
+def getEccentricAnomaly(M, ecc):
+    return solveUsingNewtonsMethod(
+        M, lambda E: E - ecc * sin(E) - M, lambda E: 1 - ecc * cos(E)
+    )
+
+
+def getLastPerihelionTime(a, M_deg, t_Gd):
+    return t_Gd - radians(M_deg) * (a**1.5)

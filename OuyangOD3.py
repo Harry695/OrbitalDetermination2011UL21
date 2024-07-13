@@ -26,8 +26,13 @@ omega = getLongitudeOfAscendingNode(posVec, velVec)
 print("Longitude of ascending node:", omega, f"with {(omega - 236.2502480179119) / 236.2502480179119 :%} error")
 w = getArgumentOfPerihelion(posVec, velVec)
 print("Argument of perihelion:", w, f"with {(w - 255.5316184725226) / 255.5316184725226 :%} error")
-M = getMeanAnomaly(posVec, velVec)
-print("Mean anomaly:", M)
+M = getMeanAnomaly(posVec, velVec) 
+print("Mean anomaly:", M, f"with {(M - 1.397389542591620E+02) / 1.397389542591620E+02 :%} error")
+
+time_Jd = gregorianToJulianDay(2018, 7, 13, 6, 0, 0)
+print("Julian date:", time_Jd)
+lastPerihelionTime_Jd = getLastPerihelionTime(a, M, time_Jd / Constants.DAY_IN_GAUSSIAN_DAY) * Constants.DAY_IN_GAUSSIAN_DAY
+print("Last perihelion time in Jd:", lastPerihelionTime_Jd)
 
 #DEBUG
 # print("HMStoDeg test", HMStoDeg(12, 3, 5.3)) #expected 180.7720833
