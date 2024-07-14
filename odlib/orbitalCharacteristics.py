@@ -71,6 +71,9 @@ def getTrueAnomaly(posVec, velVec):
 
 
 def getMeanAnomaly(posVec, velVec):
+    """
+    Returns mean anomaly in degrees
+    """
     posMag = magnitude(posVec)
     a = getSemimajorAxis(posVec, velVec)
     e = getEccentricity(posVec, velVec)
