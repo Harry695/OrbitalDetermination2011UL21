@@ -4,3 +4,4 @@ class Constants:
     EARTH_MASS_KG = 5.97219e24
     SUN_MASS_KG = 1.989e30
     MU = 1 # in AU and Gaussian days
+    EARTH_TILT = 23.4384987711
