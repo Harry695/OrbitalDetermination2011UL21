@@ -19,45 +19,57 @@ def getEccentricity(posVec, velVec):  # works
 
 
 def getInclination(posVec, velVec):  # works
+    """
+    Returns inclination in radians.
+    """
     hVec = getAngularMomentum(posVec, velVec)
     return acos(hVec[2] / magnitude(hVec))
 
 
 def getLongitudeOfAscendingNode(posVec, velVec):  # works
+    """
+    Returns longitude of ascending node in radians.
+    """
     hVec = getAngularMomentum(posVec, velVec)
     hMag = magnitude(hVec)
     i = getInclination(posVec, velVec)
-    return quadrantCorrection(hVec[0] / (hMag * sin(i)), -hVec[1] / (hMag * sin(i)))
+    return radians(quadrantCorrection(hVec[0] / (hMag * sin(i)), -hVec[1] / (hMag * sin(i))))
 
 
 def getArgumentOfPerihelion(posVec, velVec):  # works
+    """
+    Returns argument of perihelion in radians.
+    """
     posMag = magnitude(posVec)
     a = getSemimajorAxis(posVec, velVec)
     e = getEccentricity(posVec, velVec)
     i = getInclination(posVec, velVec)
-    omega = radians(getLongitudeOfAscendingNode(posVec, velVec))
+    omega = getLongitudeOfAscendingNode(posVec, velVec)
     hVec = getAngularMomentum(posVec, velVec)
     hMag = magnitude(hVec)
     sinU = posVec[2] / (posMag * sin(i))
     # print(sinU)
     cosU = (posVec[0] * cos(omega) + posVec[1] * sin(omega)) / posMag
     # print(cosU)
-    u = quadrantCorrection(sinU, cosU)
+    u = radians(quadrantCorrection(sinU, cosU))
     sinMu = a * (1 - e**2) * np.dot(posVec, velVec) / (e * hMag * posMag)
     # print(sinMu)
     cosMu = (a * (1 - e**2) / posMag - 1) / e
     # print(cosMu)
     # mu = quadrantCorrection(sinMu, cosMu)
     mu = getTrueAnomaly(posVec, velVec)
-    # print("U", u)
-    # print("Mu", mu)
+    print("U", u)
+    print("Mu", mu)
     w = u - mu
     if w < 0:
-        w += 360
+        w += 2 * np.pi
     return w
 
 
 def getTrueAnomaly(posVec, velVec):
+    """
+    Returns true anomaly in radians.
+    """
     posMag = magnitude(posVec)
     h = getAngularMomentum(posVec, velVec)
     hMag = magnitude(h)
@@ -67,18 +79,18 @@ def getTrueAnomaly(posVec, velVec):
     # print(sinMu)
     cosMu = (a * (1 - e**2) / posMag - 1) / e
     # print(cosMu)
-    return quadrantCorrection(sinMu, cosMu)
+    return radians(quadrantCorrection(sinMu, cosMu))
 
 
 def getMeanAnomaly(posVec, velVec):
     """
-    Returns mean anomaly in degrees
+    Returns mean anomaly in radians.
     """
     posMag = magnitude(posVec)
     a = getSemimajorAxis(posVec, velVec)
     e = getEccentricity(posVec, velVec)
     E = acos((1 - posMag / a) / e)
-    return degrees(E - e * sin(E))
+    return E - e * sin(E)
 
 
 def getEccentricAnomaly(M, ecc):
@@ -87,5 +99,5 @@ def getEccentricAnomaly(M, ecc):
     )
 
 
-def getLastPerihelionTime(a, M_deg, t_Gd):
-    return t_Gd - radians(M_deg) * (a**1.5)
+def getLastPerihelionTime(a, M_rad, t_Gd):
+    return t_Gd - M_rad * (a**1.5)
