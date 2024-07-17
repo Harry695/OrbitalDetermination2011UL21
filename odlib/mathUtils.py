@@ -26,21 +26,20 @@ def quadrantCorrection(sin, cos): #TODO: test edge cases more
     else:
         return 0
 
-def vectorRotation(vec, axis, angle): # active rotation
+def vectorRotation(vec, axis, angle_rad): # active rotation
     vec = np.matrix([[vec[0]], [vec[1]], [vec[2]]]) #convert 1x3 to 3x1 for matrix multiplication
-    angle = radians(angle)
     match axis:
         case Axis.X:
             rotMatrix = np.array([[1, 0, 0],
-                                   [0, cos(angle), -sin(angle)],
-                                   [0, sin(angle), cos(angle)]])
+                                   [0, cos(angle_rad), -sin(angle_rad)],
+                                   [0, sin(angle_rad), cos(angle_rad)]])
         case Axis.Y:
-            rotMatrix = np.array([[cos(angle), 0, sin(angle)],
+            rotMatrix = np.array([[cos(angle_rad), 0, sin(angle_rad)],
                                   [0, 1, 0],
-                                  [-sin(angle), 0, cos(angle)]])
+                                  [-sin(angle_rad), 0, cos(angle_rad)]])
         case Axis.Z:
-            rotMatrix = np.array([[cos(angle), -sin(angle), 0],
-                                  [sin(angle), cos(angle), 0],
+            rotMatrix = np.array([[cos(angle_rad), -sin(angle_rad), 0],
+                                  [sin(angle_rad), cos(angle_rad), 0],
                                   [0, 0, 1]])
     res = rotMatrix @ vec
     return np.array([res[0, 0], res[1, 0], res[2, 0]])

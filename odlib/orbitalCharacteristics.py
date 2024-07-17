@@ -58,8 +58,8 @@ def getArgumentOfPerihelion(posVec, velVec):  # works
     # print(cosMu)
     # mu = quadrantCorrection(sinMu, cosMu)
     mu = getTrueAnomaly(posVec, velVec)
-    print("U", u)
-    print("Mu", mu)
+    # print("U", u)
+    # print("Mu", mu)
     w = u - mu
     if w < 0:
         w += 2 * np.pi

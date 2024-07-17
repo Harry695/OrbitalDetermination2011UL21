@@ -1,3 +1,4 @@
+from odlib.OrbitalBody import OrbitalBody
 from odlib.constants import*
 from odlib.conversions import*
 from odlib.mathUtils import*
@@ -22,11 +23,11 @@ e = getEccentricity(posVec, velVec)
 print("Eccentricity:", e, f"with {(e - 3.442331103932664E-01) / 3.442331103932664E-01 :%} error")
 i = degrees(getInclination(posVec, velVec))
 print("Inclination:", i, f"with {(i - 2.515525144198502E+01) / 2.515525144198502E+01 :%} error")
-omega = getLongitudeOfAscendingNode(posVec, velVec)
+omega = degrees(getLongitudeOfAscendingNode(posVec, velVec))
 print("Longitude of ascending node:", omega, f"with {(omega - 2.362379803959657E+02) / 2.362379803959657E+02 :%} error")
-w = getArgumentOfPerihelion(posVec, velVec)
+w = degrees(getArgumentOfPerihelion(posVec, velVec))
 print("Argument of perihelion:", w, f"with {(w - 2.555046145241498E+02) / 2.555046145241498E+02 :%} error")
-M = getMeanAnomaly(posVec, velVec) 
+M = degrees(getMeanAnomaly(posVec, velVec))
 print("Mean anomaly:", M, f"with {(M - 1.404194574969259E+02) / 1.404194574969259E+02 :%} error")
 
 time_Jd = gregorianToJulianDay(2018, 7, 14, 0, 0, 0)
@@ -34,13 +35,7 @@ print("Julian date:", time_Jd)
 lastPerihelionTime_Jd = getLastPerihelionTime(a, M, time_Jd / Constants.DAY_IN_GAUSSIAN_DAY) * Constants.DAY_IN_GAUSSIAN_DAY
 print("Last perihelion time in Jd:", lastPerihelionTime_Jd)
 
-#DEBUG
-# print("HMStoDeg test", HMStoDeg(12, 3, 5.3)) #expected 180.7720833
-# print("DMStoDeg test", DMStoDeg(-13, 45, 23.45)) #expected -13.75651389
-# deg = 0
-# print("Quadrant correction for", deg, quadrantCorrection(sin(math.radians(deg)), cos(math.radians(deg))))
-# print("RAdecimalToHMS test 180.7720833:")
-# printHMS(180.7720833)
-# print("DecDecimalToDMS test 180.7720833:")
-# printDMS(-13.75651389)
-# print("VectorRotation test:\n", vectorRotation(np.array([-0.23, 0.887, 0.34]), Axis.Y, 45))
+
+asteroid = OrbitalBody(posVec, velVec, 2458313.5)
+asteroid.printAllOrbitalElements()
+print(asteroid.getEclipticCoords(2458333.500000000 / Constants.DAY_IN_GAUSSIAN_DAY))
