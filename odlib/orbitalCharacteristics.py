@@ -90,6 +90,7 @@ def getMeanAnomaly(posVec, velVec):
     a = getSemimajorAxis(posVec, velVec)
     e = getEccentricity(posVec, velVec)
     E = acos((1 - posMag / a) / e)
+    # print("M at observation", E - e * sin(E))
     return E - e * sin(E)
 
 
@@ -100,4 +101,6 @@ def getEccentricAnomaly(M, ecc):
 
 
 def getLastPerihelionTime(a, M_rad, t_Gd):
+    # print("M initial", M_rad)
+    # print("last perihelion", t_Gd - M_rad * (a**1.5))
     return t_Gd - M_rad * (a**1.5)
