@@ -52,6 +52,6 @@ def solveUsingNewtonsMethod(xGuess, f, fPrime):
     # update xGuess
     xNew = xGuess - f(xGuess) / fPrime(xGuess)
     print(xNew) # debug
-    if abs(xNew - xGuess) > 1.0e-18:
+    if abs(xNew - xGuess) > 1.0e-10:
         xNew = solveUsingNewtonsMethod(xNew, f, fPrime) # try again if not within bound yet
     return xNew
