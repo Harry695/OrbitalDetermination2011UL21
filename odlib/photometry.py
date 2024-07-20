@@ -156,7 +156,7 @@ def differentialPhotometry(starFile, image, targetX, targetY):
     mCat = output[0] + c
     print("Catalogue magnitude of requested star:", mCat) # debug
     uncert = output[1]
-    # print("uncert", uncert) # debug
+    print("uncert", uncert) # debug
 
     # error calculation
     error = sqrt(dm ** 2 + uncert ** 2)
@@ -164,7 +164,24 @@ def differentialPhotometry(starFile, image, targetX, targetY):
 
     return mCat, error
 
+def differentialPhotometryLOBF(signal, vMag, asteroid_signal):
+    """
+    Inputs are arrays of signal and vMag of the surrounding stars.
+    """
+    x = np.log10(signal)
+    y = vMag
+    #find line of best fit
+    m, b = np.polyfit(x, y, 1)
+    #add points to plot
+    plt.scatter(x, y)
+    #add line of best fit to plot
+    plt.plot(x, m*x+b)
+    #compute asteroid's V magnitude
+    Vmag_asteroid = m*np.log10(asteroid_signal) + b
+    return Vmag_asteroid
+
 # aperturePhotometry("aptest.fit", BackgroundMethods.MEDIAN, 490, 293, r=5, inSkyR=8, outSkyR=13)
 differentialPhotometry("stars_test.txt", "diff_phot.fit", 546, 327)
 plt.gray()
 # plt.show()
+differentialPhotometryLOBF()
