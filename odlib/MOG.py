@@ -1,5 +1,6 @@
 import numpy as np
 from odlib.mathUtils import magnitude
+from odlib.constants import Constants
 
 def getFAndGConstants(tau1, tau3, posVec2, velVec2):
     posMag2 = magnitude(posVec2)
@@ -24,15 +25,18 @@ def getdConstants(f1, f3, g1, g3):
     return d1, d3
 
 def getScalarEquationDConstants(p1Dir, p2Dir, p3Dir, earthSunVector):
-    D1 = np.dot(np.cross(earthSunVector, p2Dir), p3Dir)
-    D2 = np.dot(np.cross(p1Dir, earthSunVector), p3Dir)
-    D3 = np.dot(p1Dir, np.cross(p2Dir, earthSunVector))
-    return [D1, D2, D3]
+    """
+    WARNING: Returns D contants for the same earth-sun vector. Probably need to transpose matrix.
+    """
+    Dj1 = np.dot(np.cross(earthSunVector, p2Dir), p3Dir)
+    Dj2 = np.dot(np.cross(p1Dir, earthSunVector), p3Dir)
+    Dj3 = np.dot(p1Dir, np.cross(p2Dir, earthSunVector))
+    return [Dj1, Dj2, Dj3]
 
 def getD0(p1Dir, p2Dir, p3Dir):
     return np.dot(p1Dir, np.cross(p2Dir, p3Dir))
 
-def getDistances(cArr, D0, DArr):
+def getDistances(cArr, D0, DArr): # c2 should be -1
     """
     cArr = [c1, c2, c3]
     DArr = [[d11, d12, d13],
@@ -43,3 +47,18 @@ def getDistances(cArr, D0, DArr):
     for i in range(3):
         rhoList.append(cArr[0] * DArr[i][0] + cArr[1] * DArr[i][1] + cArr[2] * DArr[i][2]) / (cArr[i] * D0)
     return rhoList
+
+def lightSpeedCorrection(rhoMag, t):
+    return t - rhoMag / Constants.LIGHT_SPEED_M_PER_S
+
+def getRhoDirection(ra, dec):
+    return np.array([[np.cos(ra) * np.cos(dec)],
+                     [np.sin(ra) * np.cos(dec)],
+                     [np.sin(dec)]])
+
+def getTauArr(t1_Jd, t2_Jd, t3_Jd):
+    """
+    Parameter units are in Julian days!!!
+    Returns an array of [tau1, tau3, tau0]
+    """
+    return np.array([t1_Jd - t2_Jd, t3_Jd - t2_Jd, t3_Jd - t1_Jd]) / Constants.DAY_IN_GAUSSIAN_DAY # convert to Gd

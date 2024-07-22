@@ -5,10 +5,17 @@ def HMStoDeg(h, m, s):
     h = m / 60 + h
     return h / 24 * 360
 
+def HMSArrToDeg(arr):
+    return HMStoDeg(arr[0], arr[1], arr[2])
+        
 def DMStoDeg(d, m, s):
     m = s / 60 + m
     m = m*-1 if d < 0 else m # convert m to sign of d for addition
     return m / 60 + d
+
+def DMSArrToDeg(arr):
+    return DMStoDeg(arr[0], arr[1], arr[2])
+
 
 def printHMS(ra):
     hoursDecimal = ra / 360 * 24

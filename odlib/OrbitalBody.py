@@ -1,6 +1,7 @@
 from odlib.orbitalCharacteristics import *
 from odlib.mathUtils import *
-
+from odlib.ObervationInput import ObservationInput
+from odlib.MOG import *
 
 class OrbitalBody:
     def __init__(self, posVec, velVec, jD) -> None:
@@ -18,6 +19,61 @@ class OrbitalBody:
             self.a, self.M, jD / Constants.DAY_IN_GAUSSIAN_DAY
         )
 
+    @classmethod
+    def fromObservations(cls, obs):
+        """
+        obs: a list of 3 ObservationInput objects.
+        """
+        if not isinstance(obs[0], ObservationInput):
+            raise ValueError("ERROR: please input ObservationInput objects!")
+        
+        # unpack obervations
+        obs1, obs2, obs3 = obs
+
+        # calculate tau's
+        TAU1, TAU3, TAU0 = getTauArr(obs1.time_Jd, obs2.time_Jd, obs3.time_Jd) # np array unpacking - possibly sketchy
+        
+        # build rhoHats
+        P1DIR = getRhoDirection(obs1.ra, obs1.dec)
+        P2DIR = getRhoDirection(obs2.ra, obs2.dec)
+        P3DIR = getRhoDirection(obs3.ra, obs3.dec)
+
+        # initial guesses
+        c1Guess = TAU3 / TAU0
+        c3Guess = -TAU1 / TAU0
+        
+        # get Ds and distance
+        DARR = [getScalarEquationDConstants(P1DIR, P2DIR, P3DIR, obs1.earthSunVector), 
+                getScalarEquationDConstants(P1DIR, P2DIR, P3DIR, obs2.earthSunVector),
+                getScalarEquationDConstants(P1DIR, P2DIR, P3DIR, obs3.earthSunVector)]
+        DARR = np.transpose(DARR) # !IMPORTANT! transpose DArr for input
+        D0 = getD0(P1DIR, P2DIR, P3DIR)
+        p1Mag, p2Mag, p3Mag = getDistances([c1Guess, -1, c3Guess], D0, DARR) 
+
+        # find p's
+        p1Vec = p1Mag * P1DIR
+        p2Vec = p2Mag * P2DIR
+        p3Vec = p3Mag * P3DIR
+
+        # find rVec's
+        posVec1 = p1Vec - obs1.earthSunVector
+        posVec2 = p2Vec - obs2.earthSunVector
+        posVec3 = p3Vec - obs3.earthSunVector
+
+        # guess r2dot
+        r12Dot = -(posVec2 - posVec1) / TAU1
+        r23Dot = (posVec3 - posVec2) / TAU3
+        velVec2 = (TAU3 / TAU0) * r12Dot - (TAU1 / TAU0) * r23Dot
+
+        # ready for iterative process
+        f1, f3, g1, g3 = getFAndGConstants(TAU1, TAU3, posVec2, velVec2)
+        c1, c3 = getcConstants(f1, f3, g1, g3)
+        p1Mag, p2Mag, p3Mag = getDistances([c1, -1, c3], D0, DARR) # names sketchy
+        # find rVec's
+        # find r2Dot
+        # restart
+
+            
     def getCurrentMeanAnomaly(self, time_gD):
         """
         Returns the current mean anomaly in radians.
