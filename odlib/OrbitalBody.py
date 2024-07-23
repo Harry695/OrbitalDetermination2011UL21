@@ -20,34 +20,39 @@ class OrbitalBody:
         )
 
     @classmethod
-    def fromObservations(cls, obs):
+    def fromObservations(cls, obs): # TODO: implement more than 3 obs
         """
         obs: a list of 3 ObservationInput objects.
         """
         if not isinstance(obs[0], ObservationInput):
             raise ValueError("ERROR: please input ObservationInput objects!")
         
+        MOG_THRESHOLD = 1.0e-12
+
         # unpack obervations
         obs1, obs2, obs3 = obs
 
         # calculate tau's
-        TAU1, TAU3, TAU0 = getTauArr(obs1.time_Jd, obs2.time_Jd, obs3.time_Jd) # np array unpacking - possibly sketchy
+        tau1, tau3, tau0 = getTauArr(obs1.time_Jd, obs2.time_Jd, obs3.time_Jd) # np array unpacking - possibly sketchy
         
         # build rhoHats
         P1DIR = getRhoDirection(obs1.ra, obs1.dec)
         P2DIR = getRhoDirection(obs2.ra, obs2.dec)
         P3DIR = getRhoDirection(obs3.ra, obs3.dec)
+        print("pDir", P1DIR, P2DIR, P3DIR, sep="\n")
 
-        # initial guesses
-        c1Guess = TAU3 / TAU0
-        c3Guess = -TAU1 / TAU0
-        
-        # get Ds and distance
+        # compute D constants
         DARR = [getScalarEquationDConstants(P1DIR, P2DIR, P3DIR, obs1.earthSunVector), 
                 getScalarEquationDConstants(P1DIR, P2DIR, P3DIR, obs2.earthSunVector),
                 getScalarEquationDConstants(P1DIR, P2DIR, P3DIR, obs3.earthSunVector)]
         DARR = np.transpose(DARR) # !IMPORTANT! transpose DArr for input
         D0 = getD0(P1DIR, P2DIR, P3DIR)
+        
+        # initial guesses
+        c1Guess = tau3 / tau0
+        c3Guess = -tau1 / tau0
+        
+        # calculate distance
         p1Mag, p2Mag, p3Mag = getDistances([c1Guess, -1, c3Guess], D0, DARR) 
 
         # find p's
@@ -61,17 +66,59 @@ class OrbitalBody:
         posVec3 = p3Vec - obs3.earthSunVector
 
         # guess r2dot
-        r12Dot = -(posVec2 - posVec1) / TAU1
-        r23Dot = (posVec3 - posVec2) / TAU3
-        velVec2 = (TAU3 / TAU0) * r12Dot - (TAU1 / TAU0) * r23Dot
+        r12Dot = -(posVec2 - posVec1) / tau1
+        r23Dot = (posVec3 - posVec2) / tau3
+        velVec2 = (tau3 / tau0) * r12Dot - (tau1 / tau0) * r23Dot
 
-        # ready for iterative process
-        f1, f3, g1, g3 = getFAndGConstants(TAU1, TAU3, posVec2, velVec2)
-        c1, c3 = getcConstants(f1, f3, g1, g3)
-        p1Mag, p2Mag, p3Mag = getDistances([c1, -1, c3], D0, DARR) # names sketchy
-        # find rVec's
-        # find r2Dot
-        # restart
+        print("inital r2 guess", posVec2)
+        print("inital r2dot guess", velVec2)
+
+        while True:
+            # ready for iterative process
+            f1, f3, g1, g3 = getFAndGConstants(tau1, tau3, posVec2, velVec2)
+            c1, c3 = getcConstants(f1, f3, g1, g3)
+            d1, d3 = getdConstants(f1, f3, g1, g3)
+
+            # calculate distance
+            p1Mag, p2Mag, p3Mag = getDistances([c1, -1, c3], D0, DARR) # names sketchy
+            print("rhomags", p1Mag, p2Mag, p3Mag)
+            
+            # time correction
+            newt1_Jd = obs1.lightSpeedCorrection(p1Mag)
+            newt2_Jd = obs2.lightSpeedCorrection(p2Mag)
+            newt3_Jd = obs3.lightSpeedCorrection(p3Mag)
+            tau1, tau3, tau0 = getTauArr(newt1_Jd, newt2_Jd, newt3_Jd) # np array unpacking - possibly sketchy
+
+            # find p's
+            p1Vec = P1DIR * p1Mag
+            p2Vec = P2DIR * p2Mag
+            p3Vec = P3DIR * p3Mag
+
+            # find rVec's
+            newPosVec1 = p1Vec - obs1.earthSunVector
+            newPosVec2 = p2Vec - obs2.earthSunVector
+            newPosVec3 = p3Vec - obs3.earthSunVector
+            
+            # find r2Dot
+            newVelVec2 = d1 * newPosVec1 + d3 * newPosVec3
+
+            # determine when to end loop
+            if (abs(newPosVec2[0] - posVec2[0]) < MOG_THRESHOLD and 
+                abs(newPosVec2[1] - posVec2[1]) < MOG_THRESHOLD and
+                abs(newPosVec2[2] - posVec2[2]) < MOG_THRESHOLD):
+                break
+            else: # if not within threshold, continue
+                posVec2 = newPosVec2
+                velVec2 = newVelVec2
+                print("iterative r2", posVec2)
+                print("iterative r2dot", velVec2)
+
+        # convert from equatorial to ecliptic
+        posVec2 = vectorRotation(posVec2, Axis.X, -radians(Constants.EARTH_TILT_DEG)) 
+        velVec2 = vectorRotation(velVec2, Axis.X, -radians(Constants.EARTH_TILT_DEG))
+
+        # return
+        return cls(posVec2, velVec2, obs2.time_Jd)
 
             
     def getCurrentMeanAnomaly(self, time_gD):
@@ -102,10 +149,10 @@ class OrbitalBody:
 
     def getEarthBodyVector(self, time_gD):
         eclCoords = self.getEclipticCoords(time_gD)
-        eqCoords = vectorRotation(eclCoords, Axis.X, radians(Constants.EARTH_TILT_DEG))
+        eqCoords = vectorRotation(eclCoords, Axis.X, radians(Constants.EARTH_TILT_DEG)) 
         # print("eq coords", eqCoords)
         # print("Earth-sun", Constants.EARTH_SUN_2458333_HALF)
-        rho = eqCoords + Constants.EARTH_SUN_2458333_HALF  # hard coded date
+        rho = eqCoords + Constants.EARTH_SUN_2458333_HALF  # TODO: replace hard-coded earthsunvec
         return rho
 
     def getRAandDEC(self, time_gD):
@@ -125,8 +172,8 @@ class OrbitalBody:
         print("-" * 10, "Orbital elements", "-" * 10)
         print("a:", self.a)
         print("e:", self.e)
-        print("i", self.i)
+        print("i", degrees(self.i))
         print("omega:", degrees(self.omega))
         print("w:", degrees(self.w))
-        print("M", self.M)
-        print("-" * 20)
+        print("M", degrees(self.M))
+        print("-" * 40)

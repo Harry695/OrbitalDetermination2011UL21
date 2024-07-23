@@ -45,20 +45,17 @@ def getDistances(cArr, D0, DArr): # c2 should be -1
     """
     rhoList = []
     for i in range(3):
-        rhoList.append(cArr[0] * DArr[i][0] + cArr[1] * DArr[i][1] + cArr[2] * DArr[i][2]) / (cArr[i] * D0)
+        rhoList.append((cArr[0] * DArr[i][0] + cArr[1] * DArr[i][1] + cArr[2] * DArr[i][2]) / (cArr[i] * D0))
     return rhoList
 
-def lightSpeedCorrection(rhoMag, t):
-    return t - rhoMag / Constants.LIGHT_SPEED_M_PER_S
-
 def getRhoDirection(ra, dec):
-    return np.array([[np.cos(ra) * np.cos(dec)],
-                     [np.sin(ra) * np.cos(dec)],
-                     [np.sin(dec)]])
+    return np.array([np.cos(ra) * np.cos(dec),
+                     np.sin(ra) * np.cos(dec),
+                     np.sin(dec)])
 
 def getTauArr(t1_Jd, t2_Jd, t3_Jd):
     """
     Parameter units are in Julian days!!!
-    Returns an array of [tau1, tau3, tau0]
+    Returns an array of [tau1, tau3, tau0] in Gd
     """
     return np.array([t1_Jd - t2_Jd, t3_Jd - t2_Jd, t3_Jd - t1_Jd]) / Constants.DAY_IN_GAUSSIAN_DAY # convert to Gd
