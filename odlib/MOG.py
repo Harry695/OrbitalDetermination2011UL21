@@ -12,6 +12,7 @@ def getFAndGConstants(tau1, tau3, posVec2, velVec2):
     g1 = tau1 - (u * tau1**3) / 6. + (u * z * tau1**4) / 4.
     f3 = 1 - (u * tau3**2) / 2. + (u * z * tau3**3) / 2. + (3 * u * q - 15 * u * z**2 + u**2) * tau3**4 / 24.
     g3 = tau3 - (u * tau3**3) / 6. + (u * z * tau3**4) / 4.
+    # print(f1, f3, g1, g3)
     return f1, f3, g1, g3
 
 def getcConstants(f1, f3, g1, g3):
@@ -46,6 +47,11 @@ def getDistances(cArr, D0, DArr): # c2 should be -1
     rhoList = []
     for i in range(3):
         rhoList.append((cArr[0] * DArr[i][0] + cArr[1] * DArr[i][1] + cArr[2] * DArr[i][2]) / (cArr[i] * D0))
+
+    #alt
+    # rhoList = [(cArr[0] * DArr[0][0] + cArr[1] * DArr[0][1] + cArr[2] * DArr[0][2]) / (cArr[0] * D0),
+    #            (cArr[0] * DArr[1][0] + cArr[1] * DArr[1][1] + cArr[2] * DArr[1][2]) / (cArr[1] * D0),
+    #            (cArr[0] * DArr[2][0] + cArr[1] * DArr[2][1] + cArr[2] * DArr[2][2]) / (cArr[2] * D0)]
     return rhoList
 
 def getRhoDirection(ra, dec):

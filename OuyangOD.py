@@ -16,11 +16,10 @@ for line in file:
     dec_decimal = np.asfarray(data[2].split(":"))
     # print(dec_decimal)
     earthSunVec = np.asfarray(data[3:6])
-    print("input earthSunVec", earthSunVec)
+    # print("input earthSunVec", earthSunVec)
     obs.append(ObservationInput(float(data[0]), HMSArrToDeg(ra_decimal), DMSArrToDeg(dec_decimal), earthSunVec))
-
-for e in obs:
-    print(e)
+# for e in obs:
+#     print(e)
 
 UL21 = OrbitalBody.fromObservations(obs)
 UL21.printAllOrbitalElements()
