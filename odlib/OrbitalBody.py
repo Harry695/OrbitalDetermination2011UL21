@@ -11,6 +11,7 @@ class OrbitalBody:
         """
         # print("class r2", posVec)
         # print("class r2dot", velVec)
+        self.t_gD = jD / Constants.DAY_IN_GAUSSIAN_DAY
         self.a = getSemimajorAxis(posVec, velVec)
         # print("class a", self.a)
         # print("h:", getAngularMomentum(posVec, velVec))
@@ -161,9 +162,10 @@ class OrbitalBody:
         Returns the current mean anomaly in radians.
         """
         # print("time_gd", time_gD)
-        # print("t0", self.t0)
-        # print("n", 1 / self.a**1.5)
-        return (time_gD - self.t0) / self.a**1.5
+        # print("t_gD", self.t_gD)
+        # print("M", self.M)
+        # print("change in M", (time_gD - self.t_gD) / self.a**1.5)
+        return (self.M + (time_gD - self.t_gD) / self.a**1.5) % (2 * np.pi)
 
     def getEclipticCoords(self, time_gD):
         M = self.getCurrentMeanAnomaly(time_gD)

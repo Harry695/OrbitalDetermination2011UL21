@@ -65,3 +65,6 @@ def getTauArr(t1_Jd, t2_Jd, t3_Jd):
     Returns an array of [tau1, tau3, tau0] in Gd
     """
     return np.array([t1_Jd - t2_Jd, t3_Jd - t2_Jd, t3_Jd - t1_Jd]) / Constants.DAY_IN_GAUSSIAN_DAY # convert to Gd
+
+def getMonteCarloErrorBounds(orbitalBody, errorFile):
+    errorData = open(errorFile).readlines()

@@ -24,13 +24,17 @@ for line in file:
 UL21 = OrbitalBody.fromObservations(obs)
 UL21.printAllOrbitalElements()
 
-correct = OrbitalBody(np.array([0.0557307, -1.12581648, 0.0550659177]),
-                      np.array([0.019095149, 0.00559168, 0.0003274835]) * Constants.DAY_IN_GAUSSIAN_DAY, 
-                      2460125.708333333)
-print("correct r2", np.array([0.0557307, -1.12581648, 0.0550659177]))
-print("correct r2dot", np.array([0.019095149, 0.00559168, 0.0003274835]) * Constants.DAY_IN_GAUSSIAN_DAY)
-print("correct orbital elements")
-correct.printAllOrbitalElements()
+# correct = OrbitalBody(np.array([0.0557307, -1.12581648, 0.0550659177]),
+#                       np.array([0.019095149, 0.00559168, 0.0003274835]) * Constants.DAY_IN_GAUSSIAN_DAY, 
+#                       2460125.708333333)
+# print("correct r2", np.array([0.0557307, -1.12581648, 0.0550659177]))
+# print("correct r2dot", np.array([0.019095149, 0.00559168, 0.0003274835]) * Constants.DAY_IN_GAUSSIAN_DAY)
+# print("correct orbital elements")
+# correct.printAllOrbitalElements()
+
+jd = gregorianToJulianDay(2024, 7, 24, 0, 0, 0)
+# print(jd)
+print("July 24 mean anomaly", degrees(UL21.getCurrentMeanAnomaly(jd / Constants.DAY_IN_GAUSSIAN_DAY)))
 
 """
 true orbital elements of test case

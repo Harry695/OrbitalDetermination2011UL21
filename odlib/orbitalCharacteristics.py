@@ -92,8 +92,8 @@ def getMeanAnomaly(posVec, velVec):
     mu = getTrueAnomaly(posVec, velVec)
     E = acos((1 - posMag / a) / e) if mu < np.pi else 2 * np.pi - acos((1 - posMag / a) / e)
     # print("E at observation", E)
-    # print("M at observation", E - e * sin(E))
-    return E - e * sin(E)
+    # print("M at observation", (E - e * sin(E)) % (2 * np.pi))
+    return (E - e * sin(E)) % (2 * np.pi)
 
 
 def getEccentricAnomaly(M, ecc):
@@ -104,5 +104,5 @@ def getEccentricAnomaly(M, ecc):
 
 def getLastPerihelionTime(a, M_rad, t_Gd):
     # print("M initial", M_rad)
-    # print("last perihelion", t_Gd - M_rad * (a**1.5))
+    # print("last perihelion", (t_Gd - M_rad * (a**1.5)) * Constants.DAY_IN_GAUSSIAN_DAY)
     return t_Gd - M_rad * (a**1.5)
