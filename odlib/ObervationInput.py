@@ -13,7 +13,7 @@ class ObservationInput:
         return self.time_Jd / Constants.DAY_IN_GAUSSIAN_DAY
     
     def lightSpeedCorrection(self, rhoMag):
-        return self.time_Jd - rhoMag / Constants.LIGHT_SPEED_M_PER_S
+        return self.time_Jd - rhoMag / Constants.LIGHT_SPEED_AU_DAY
 
     def __str__(self) -> str:
         return f'''\nObservation at {self.time_Jd} Julian day:
