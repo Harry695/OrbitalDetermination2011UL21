@@ -89,7 +89,9 @@ def getMeanAnomaly(posVec, velVec):
     posMag = magnitude(posVec)
     a = getSemimajorAxis(posVec, velVec)
     e = getEccentricity(posVec, velVec)
-    E = acos((1 - posMag / a) / e)
+    mu = getTrueAnomaly(posVec, velVec)
+    E = acos((1 - posMag / a) / e) if mu < np.pi else 2 * np.pi - acos((1 - posMag / a) / e)
+    # print("E at observation", E)
     # print("M at observation", E - e * sin(E))
     return E - e * sin(E)
 
