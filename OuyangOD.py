@@ -5,6 +5,7 @@ from odlib.conversions import*
 from odlib.mathUtils import*
 from odlib.orbitalCharacteristics import*
 from odlib.MOG import*
+from odlib.monteCarloError import getMonteCarloErrorBounds
 import numpy as np
 
 file = open("OuyangInput.txt").readlines() # [time_Jd, ra_hr, dec_hr, R_x, R_y, R_z]
@@ -18,8 +19,8 @@ for line in file:
     earthSunVec = np.asfarray(data[3:6])
     # print("input earthSunVec", earthSunVec)
     obs.append(ObservationInput(float(data[0]), HMSArrToDeg(ra_decimal), DMSArrToDeg(dec_decimal), earthSunVec))
-# for e in obs:
-#     print(e)
+for e in obs:
+    print(e)
 
 UL21 = OrbitalBody.fromObservations(obs)
 UL21.printAllOrbitalElements()
@@ -35,6 +36,18 @@ UL21.printAllOrbitalElements()
 jd = gregorianToJulianDay(2024, 7, 24, 0, 0, 0)
 # print(jd)
 print("July 24 mean anomaly", degrees(UL21.getCurrentMeanAnomaly(jd / Constants.DAY_IN_GAUSSIAN_DAY)))
+
+# monte carlo
+errorData = open("errors_test.txt").readlines()
+errorArr = np.array([np.asfarray(line.strip().split()) for line in errorData])
+errorArr /= 3600 # convert from arcseconds to degrees
+print(errorArr)
+boundedOEs = getMonteCarloErrorBounds(obs, errorArr)
+
+for e in boundedOEs:
+    mean, std = e
+    print("mean", mean, "+-", std)
+
 
 """
 true orbital elements of test case

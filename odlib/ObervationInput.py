@@ -1,12 +1,12 @@
-from math import radians
+from math import degrees, radians
 from odlib.constants import Constants
 
 
 class ObservationInput:
     def __init__(self, time_Jd, ra_deg, dec_deg, earthSunVector) -> None:
         self.time_Jd = time_Jd
-        self.ra = radians(ra_deg)
-        self.dec = radians(dec_deg)
+        self.ra = ra_deg
+        self.dec = dec_deg
         self.earthSunVector = earthSunVector
     
     def getTimeGd(self):

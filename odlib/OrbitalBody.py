@@ -33,6 +33,7 @@ class OrbitalBody:
             raise ValueError("ERROR: please input ObservationInput objects!")
         
         MOG_THRESHOLD = 1.0e-12
+        ITERATION_CAP = 500
 
         # unpack obervations
         obs1, obs2, obs3 = obs
@@ -42,9 +43,9 @@ class OrbitalBody:
         # print("taus", tau1, tau3, tau0)
 
         # build rhoHats
-        P1DIR = getRhoDirection(obs1.ra, obs1.dec)
-        P2DIR = getRhoDirection(obs2.ra, obs2.dec)
-        P3DIR = getRhoDirection(obs3.ra, obs3.dec)
+        P1DIR = getRhoDirection(radians(obs1.ra), radians(obs1.dec))
+        P2DIR = getRhoDirection(radians(obs2.ra), radians(obs2.dec))
+        P3DIR = getRhoDirection(radians(obs3.ra), radians(obs3.dec))
         # print("pDir", P1DIR, P2DIR, P3DIR, sep="\n")
 
         # compute D constants
@@ -98,7 +99,7 @@ class OrbitalBody:
         count = 0
         while True:
             count += 1
-            print(count)
+            # print(count)
             # time correction
             newt1_Jd = obs1.lightSpeedCorrection(p1Mag)
             newt2_Jd = obs2.lightSpeedCorrection(p2Mag)
@@ -113,7 +114,7 @@ class OrbitalBody:
 
             # calculate distance
             p1Mag, p2Mag, p3Mag = getDistances([c1, -1, c3], D0, DARR) # names sketchy
-            print("rhomags", p1Mag, p2Mag, p3Mag)
+            # print("rhomags", p1Mag, p2Mag, p3Mag)
 
             # find p's
             p1Vec = P1DIR * p1Mag
@@ -128,12 +129,17 @@ class OrbitalBody:
             # find r2Dot
             newVelVec2 = d1 * newPosVec1 + d3 * newPosVec3
 
-            print("iterative r2", posVec2)
-            print("iterative r2dot", velVec2)
+            # if count <= 5:
+                # print("iterative r2", posVec2)
+                # print("iterative r2dot", velVec2)
+
             # determine when to end loop
             if (abs(newPosVec2[0] - posVec2[0]) < MOG_THRESHOLD and 
                 abs(newPosVec2[1] - posVec2[1]) < MOG_THRESHOLD and
                 abs(newPosVec2[2] - posVec2[2]) < MOG_THRESHOLD):
+                posVec2 = newPosVec2
+                velVec2 = newVelVec2
+                print("final r2", posVec2)
                 break
             else: # if not within threshold, continue
                 posVec2 = newPosVec2
@@ -144,13 +150,19 @@ class OrbitalBody:
             #     p1Mag = p1MagNew
             #     p2Mag = p2MagNew
             #     p3Mag = p3MagNew
-            print("")
+            # print("")
+
+            # nonconvergence check
+            if (count > ITERATION_CAP):
+                print("NONCONVERGING MOG")
+                return None
 
         # convert from equatorial to ecliptic
         posVec2 = vectorRotation(posVec2, Axis.X, -radians(Constants.EARTH_TILT_DEG)) 
         velVec2 = vectorRotation(velVec2, Axis.X, -radians(Constants.EARTH_TILT_DEG))
         print("\necliptic r2", posVec2)
         print("ecliptic r2dot", velVec2)
+        print("a", getSemimajorAxis(posVec2, velVec2))
 
         # return
         # print("start class construction with", posVec2, velVec2, newt2_Jd)
@@ -214,3 +226,9 @@ class OrbitalBody:
         print("w:", degrees(self.w))
         print("M", degrees(self.M))
         print("-" * 40)
+    
+    def getAllOrbitalElements(self):
+        """
+        Returns an array of [a, e, i, omega, w] in AU, Gd, and degrees.
+        """
+        return np.array([self.a, self.e, degrees(self.i), degrees(self.omega), degrees(self.w)])

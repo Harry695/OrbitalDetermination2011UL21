@@ -54,10 +54,10 @@ def getDistances(cArr, D0, DArr): # c2 should be -1
     #            (cArr[0] * DArr[2][0] + cArr[1] * DArr[2][1] + cArr[2] * DArr[2][2]) / (cArr[2] * D0)]
     return rhoList
 
-def getRhoDirection(ra, dec):
-    return np.array([np.cos(ra) * np.cos(dec),
-                     np.sin(ra) * np.cos(dec),
-                     np.sin(dec)])
+def getRhoDirection(ra_rad, dec_rad):
+    return np.array([np.cos(ra_rad) * np.cos(dec_rad),
+                     np.sin(ra_rad) * np.cos(dec_rad),
+                     np.sin(dec_rad)])
 
 def getTauArr(t1_Jd, t2_Jd, t3_Jd):
     """
@@ -65,6 +65,3 @@ def getTauArr(t1_Jd, t2_Jd, t3_Jd):
     Returns an array of [tau1, tau3, tau0] in Gd
     """
     return np.array([t1_Jd - t2_Jd, t3_Jd - t2_Jd, t3_Jd - t1_Jd]) / Constants.DAY_IN_GAUSSIAN_DAY # convert to Gd
-
-def getMonteCarloErrorBounds(orbitalBody, errorFile):
-    errorData = open(errorFile).readlines()
